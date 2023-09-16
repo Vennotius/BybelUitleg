@@ -113,8 +113,8 @@ doc.append(NoEscape(r'\renewcommand{\normalsize}{\fontsize{12}{18}\selectfont}')
 
 # Left align the text and disable hyphenation
 doc.append(NoEscape(r'\raggedright'))
-doc.append(NoEscape(r'\hyphenpenalty=10000'))
-doc.append(NoEscape(r'\exhyphenpenalty=10000'))
+doc.append(NoEscape(r'\hyphenpenalty=100'))
+doc.append(NoEscape(r'\exhyphenpenalty=100'))
 
 # Set custom header and footer
 doc.preamble.append(NoEscape(r'\pagestyle{fancy}'))
@@ -123,20 +123,28 @@ doc.preamble.append(NoEscape(r'\fancyhead[C]{\fontsize{18}{20}\selectfont\textbf
 doc.preamble.append(NoEscape(r'\fancyfoot[C]{\thepage}'))  # Page number in footer
 
 # Title logic as before
-doc.preamble.append(Command('title', 'The Bible'))
-doc.preamble.append(Command('author', 'Anonymous'))
-doc.append(NoEscape(r'\maketitle'))
+# doc.preamble.append(Command('title', 'The Bible'))
+# doc.preamble.append(Command('author', 'Anonymous'))
+# doc.append(NoEscape(r'\maketitle'))
 
 
 # from unidecode import unidecode
 doc.preamble.append(Package('lettrine'))
 
-doc.append(NoEscape(r'\begin{multicols}{2}'))  # Start 2-column layout
 for book_index, book in enumerate(BYBEL_TEKS):
-    if book_index > 1:
+    if book_index > 3:
         break
+
+    # New Page and Centered Title for Each Book
+    doc.append(NewPage())
+    doc.append(NoEscape(f'\\begin{{center}}\\fontsize{{36}}{{36}}\\selectfont\\textbf{{{BYBEL_BOEKNAME[book_index]}}}\\normalsize\\end{{center}}'))
+    doc.append(NoEscape(r'\hrule'))  # Add horizontal line under the title
+    doc.append(NoEscape(r'\begin{multicols}{2}'))  # Start 2-column layout
+
+
+
     for chapter_index, chapter in enumerate(book):
-        doc.append(NoEscape(f'\\renewcommand{{\\rightmark}}{{{BYBEL_BOEKNAME[book_index]} {chapter_index + 1}}}'))  # Set header
+        doc.append(NoEscape(f'\\renewcommand{{\\rightmark}}{{{BYBEL_BOEKNAME[book_index]} {chapter_index}}}'))  # Set header
         
         # Reduce vertical space before the lettrine
         doc.append(NoEscape(f'\\vspace*{{-0.5em}}'))
@@ -154,8 +162,8 @@ for book_index, book in enumerate(BYBEL_TEKS):
                 doc.append(NoEscape(f'{verse}'))
             doc.append(NewLine())
 
+    doc.append(NoEscape(r'\end{multicols}'))  # End 2-column layout
         
-doc.append(NoEscape(r'\end{multicols}'))  # End 2-column layout
 
 
 
