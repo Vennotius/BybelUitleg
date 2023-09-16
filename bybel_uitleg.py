@@ -1,4 +1,5 @@
 import json
+import re
 import subprocess
 
 BYBEL_BOEKNAME = [
@@ -72,8 +73,34 @@ BYBEL_BOEKNAME = [
 
 BYBEL_TEKS = []
 
-with open('Bybel.json', 'r', encoding='utf-8') as f:
+with open('Bybel_20230916.json', 'r', encoding='utf-8') as f:
     BYBEL_TEKS = json.loads(f.read())
+
+def is_beginning_of_pericope(boek_nommer, hoofstuk_nommer, vers_nommer, vers):
+    # Initialize these lists with your specific values
+    psalm119Perikope = []
+    u = []
+
+    # Method logic
+    if vers.startswith(" —"):
+        return False
+
+    vers_nommer += 1
+    if boek_nommer == 18 and hoofstuk_nommer == 118 and vers_nommer in psalm119Perikope:
+        return True
+
+    vers_split = vers.split(' ', 1)
+    eerste_woord = vers_split[0].strip(',')
+    tweede_woord = vers_split[1].strip(',')
+
+    if all(char.isupper() for char in eerste_woord) and eerste_woord not in u and eerste_woord != "HERE":
+        return True
+
+    if all(char.isupper() for char in tweede_woord) and tweede_woord not in u and tweede_woord != "HERE":
+        return True
+
+    return False
+
 
 
 from pylatex import Document, NewPage, Command, Package, NewLine, UnsafeCommand
@@ -132,8 +159,8 @@ doc.preamble.append(NoEscape(r'\fancyfoot[C]{\thepage}'))  # Page number in foot
 doc.preamble.append(Package('lettrine'))
 
 for book_index, book in enumerate(BYBEL_TEKS):
-    if book_index > 3:
-        break
+    if False and book_index != 0:
+        continue
 
     # New Page and Centered Title for Each Book
     doc.append(NewPage())
@@ -141,26 +168,33 @@ for book_index, book in enumerate(BYBEL_TEKS):
     doc.append(NoEscape(r'\hrule'))  # Add horizontal line under the title
     doc.append(NoEscape(r'\begin{multicols}{2}'))  # Start 2-column layout
 
-
-
     for chapter_index, chapter in enumerate(book):
-        doc.append(NoEscape(f'\\renewcommand{{\\rightmark}}{{{BYBEL_BOEKNAME[book_index]} {chapter_index}}}'))  # Set header
-        
-        # Reduce vertical space before the lettrine
-        doc.append(NoEscape(f'\\vspace*{{-0.5em}}'))
-        
-        # doc.append(NoEscape(f'\\noindent\\fontsize{{16}}{{16}}\\selectfont\\underline{{\\textbf{{{chapter_index}}}}}\\textbf{{ }}\\normalsize'))
-        # doc.append(NoEscape(f'\\begin{{center}}\\fontsize{{24}}{{24}}\\selectfont\\textbf{{{chapter_index}}}\\normalsize\\end{{center}}'))
-        # doc.append(NoEscape(f'\\noindent\\rule{{\\textwidth}}{{1pt}}\\begin{{center}}\\fontsize{{24}}{{24}}\\selectfont\\textbf{{Chapter {chapter_index}}}\\normalsize\\end{{center}}\\noindent\\rule{{\\textwidth}}{{1pt}}'))
-        doc.append(NoEscape(f'\\lettrine[lines=2, lraise=0.1, findent=0.5em, nindent=0em]{{\\textbf{{{chapter_index + 1}}}}}{{}}\\normalsize'))
+        doc.append(NoEscape(f'\\renewcommand{{\\rightmark}}{{{BYBEL_BOEKNAME[book_index]} {chapter_index}}}'))  # Set header with chapter number
 
         for verse_index, verse in enumerate(chapter):
-            verse = verse.strip()
+            verse = verse.strip() + ' '
+            
+            if verse_index > 0 and is_beginning_of_pericope(book_index, chapter_index, verse_index, verse): 
+                doc.append(NewLine())
+                doc.append(NewLine())
+
+            # doc.append(NoEscape(r'\begin{minipage}{\linewidth}'))
             if verse_index > 0:
-               doc.append(NoEscape(f"\\textsuperscript{{\\fontsize{{9}}{{9}}\\selectfont\\textbf{{ {verse_index + 1} }}}}{verse}"))
+                doc.append(NoEscape(f"\\textsuperscript{{\\fontsize{{9}}{{9}}\\selectfont\\textbf{{ {verse_index + 1} }}}}{{}}\\normalsize"))
             else:
-                doc.append(NoEscape(f'{verse}'))
-            doc.append(NewLine())
+                # Reduce vertical space before the lettrine
+                doc.append(NoEscape(f'\\vspace*{{-0.5em}}'))
+                doc.append(NoEscape(f'\\lettrine[lines=2, lraise=0.1, findent=0.5em, nindent=0em]{{\\textbf{{{chapter_index + 1}}}}}{{}}\\normalsize'))
+
+            doc.append(NoEscape(f'{verse}'))
+            # doc.append(NoEscape(r'\end{minipage}'))
+
+            # doc.append(NewLine())
+
+            should_put_verses_on_own_line = book_index == 18 or book_index == 19
+            is_end_of_chapter = verse_index == len(chapter) - 1
+            if should_put_verses_on_own_line or is_end_of_chapter: 
+                doc.append(NewLine())
 
     doc.append(NoEscape(r'\end{multicols}'))  # End 2-column layout
         
