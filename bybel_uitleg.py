@@ -133,7 +133,7 @@ doc.preamble.append(Package('lettrine'))
 
 doc.append(NoEscape(r'\begin{multicols}{2}'))  # Start 2-column layout
 for book_index, book in enumerate(BYBEL_TEKS):
-    if book_index > 0:
+    if book_index > 1:
         break
     for chapter_index, chapter in enumerate(book):
         doc.append(NoEscape(f'\\renewcommand{{\\rightmark}}{{{BYBEL_BOEKNAME[book_index]} {chapter_index + 1}}}'))  # Set header
@@ -144,7 +144,7 @@ for book_index, book in enumerate(BYBEL_TEKS):
         # doc.append(NoEscape(f'\\noindent\\fontsize{{16}}{{16}}\\selectfont\\underline{{\\textbf{{{chapter_index}}}}}\\textbf{{ }}\\normalsize'))
         # doc.append(NoEscape(f'\\begin{{center}}\\fontsize{{24}}{{24}}\\selectfont\\textbf{{{chapter_index}}}\\normalsize\\end{{center}}'))
         # doc.append(NoEscape(f'\\noindent\\rule{{\\textwidth}}{{1pt}}\\begin{{center}}\\fontsize{{24}}{{24}}\\selectfont\\textbf{{Chapter {chapter_index}}}\\normalsize\\end{{center}}\\noindent\\rule{{\\textwidth}}{{1pt}}'))
-        doc.append(NoEscape(f'\\lettrine[lines=2, lraise=0.1, findent=0.5em, nindent=0em]{{\\textbf{{{chapter_index}}}}}{{}}\\normalsize'))
+        doc.append(NoEscape(f'\\lettrine[lines=2, lraise=0.1, findent=0.5em, nindent=0em]{{\\textbf{{{chapter_index + 1}}}}}{{}}\\normalsize'))
 
         for verse_index, verse in enumerate(chapter):
             verse = verse.strip()
@@ -156,8 +156,6 @@ for book_index, book in enumerate(BYBEL_TEKS):
 
         
 doc.append(NoEscape(r'\end{multicols}'))  # End 2-column layout
-
-
 
 
 
